@@ -1,31 +1,46 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 
+import Home from './components/HomeComponent';
+import ProfilePage from './components/ProfilesComponent';
+import CharacterCard from './components/CharacterComponent';
+
+import { PROFILES } from './shared/profiles';
+import { Switch, Route, Redirect, BrowserRouter} from 'react-router-dom';
+
 class App extends Component {
-  constructor() {
-    super();
-    this.state = { message: '' };
-  }
-  //testing
-
-  componentDidMount() {
-    fetch('/api/message')
-      .then(response => response.json())
-      .then(json => this.setState({ message: json }));
+  constructor(props) {
+      super(props);
+      this.state = {
+          profiles: PROFILES,
+          selectedProfile: null
+      };
   }
 
-  render() {
+  onProfileSelect(profileId){
+    this.setState({selectedProfile: profileId});
+  }
+
+  render () {
     return (
-      <div className="App">
-        <div className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h2>{this.state.message}</h2>
-        </div>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-      </div>
+      <BrowserRouter>
+        <Switch>
+          <Route path='/home' component={Home}/>
+          <Route exact path='/profiles' 
+            render={() => 
+              <ProfilePage 
+                profiles={this.state.profiles}
+                onClick={profileId => this.onProfileSelect(profileId)}
+              />}
+          />
+          <Route path='/profiles/:profilesid' 
+              render={() => 
+                <CharacterCard profile={this.state.profiles.filter(profile => profile.id === this.state.selectedProfile)[0]}         
+              />}
+          />    
+          <Redirect to='/home'/>
+        </Switch>
+      </BrowserRouter>
     );
   }
 }
