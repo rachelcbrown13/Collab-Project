@@ -7,6 +7,7 @@ class App extends Component {
     super();
     this.state = { message: '' };
   }
+  //testing
 
   componentDidMount() {
     fetch('/api/message')
