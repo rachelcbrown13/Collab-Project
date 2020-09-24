@@ -1,49 +1,81 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const { Profiler } = require('react');
+const Profile = require('../modules/profile');
 
 const profileRouter = express.Router();
 
+profileRouter.use(bodyParser.json());
+
 //profile Router
 profileRouter.route('/')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
+.get((req, res, next) => {
+    Profile.find()
+    .then(profiles => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(profiles);
+    })
+    .catch(err => next(err));
 })
-.get((req, res) => {
-    res.end('Will send all the profiles to you');
-})
-.post((req, res) => {
-    res.end(`Will add the profile: ${req.body.name} with description: ${req.body.description}`);
+.post((req, res, next) => {
+    Profile.create(req.body)
+    .then(profile => {
+        console.log('Profile Created ', profile);
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(profile);
+    })
+    .catch(err => next(err));
 })
 .put((req, res) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /profiles');
 })
-.delete((req, res) => {
-    res.end('Deleting all profiles');
+.delete((req, res, next) => {
+    Profile.deleteMany()
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(profile);
+    })
+    .catch(err => next(err));
 });
 
 //Individual Profile Router
 profileRouter.route('/:profileId')
-.all((req, res, next) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    next();
-})
-.get((req, res) => {
-    res.end(`Will send details of profile: ${req.params.profileId}`);
+.get((req, res, next) => {
+    Profile.findById(req.params.profileId)
+    .then(profile => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(profile);
+    })
+    .catch(err => next(err));
 })
 .post((req, res) => {
     res.statusCode = 403;
     res.end(`POST operation not supported on /profiles/${req.params.profileId}`);
 })
-.put((req, res) => {
-    res.write(`Updating the profile: ${req.params.profileId}\n`);
-    res.end(`Will update the profile: ${req.body.name} with description: ${req.body.description}`)
+.put((req, res, next) => {
+    Profile.findByIdAndUpdate(req.params.profileId, {
+        $set: req.body
+    }, { new: true })
+    .then(profile => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(profile);
+    })
+    .catch(err => next(err));
 })
-.delete((req, res) => {
-    res.end(`Deleting profile: ${req.params.profileId}`);
+.delete((req, res, next) => {
+    Profile.findByIdAndDelete(req.params.profileId)
+    .then(response => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(response);
+    })
+    .catch(err => next(err));
 });
 
 module.exports = profileRouter;
